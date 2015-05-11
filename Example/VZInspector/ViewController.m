@@ -44,6 +44,67 @@
     [self.view addSubview:self.tableView];
     
     [self load];
+    
+    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    CABasicAnimation *anim = [self rotationAnimation];
+    anim.delegate = self;
+    [window.layer addAnimation:anim forKey:@"vzanimate"];
+    
+    
+    
+}
+
+- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
+    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    UIViewController *rootVC = window.rootViewController;
+    for (UIView *view in rootVC.view.subviews) {
+        [self formatView:view];
+        for (UIView *view1 in view.subviews) {
+            [self formatView:view1];
+            for (UIView *view2 in view1.subviews) {
+                [self formatView:view2];
+            }
+        }
+    }
+}
+
+- (void)formatView:(UIView *)view {
+    view.alpha = 0.9;
+    view.layer.borderColor = [UIColor grayColor].CGColor;
+    view.layer.borderWidth = 1;
+    view.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.95];
+    [view.layer addAnimation:[self zoominAnimation] forKey:@"sub"];
+}
+
+- (CABasicAnimation *)zoominAnimation {
+    CATransform3D transform = CATransform3DIdentity;
+    // 拉近
+    transform.m34 = - 1.0 / 600.0;
+    transform = CATransform3DTranslate(transform, 10, 10, 1);
+//    transform = CATransform3DScale(transform, 0.8, 0.8, 1);
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
+    animation.toValue= [NSValue valueWithCATransform3D:transform];
+    animation.duration= 1;
+    animation.autoreverses= NO;
+    animation.fillMode = @"forwards";
+    animation.removedOnCompletion = NO;
+    return animation;
+}
+
+- (CABasicAnimation *) rotationAnimation{
+    CATransform3D transform = CATransform3DIdentity;
+    // 应用透视
+    transform.m34 = - 1.0 / 600.0;
+    // 绕Y轴旋转45度
+    transform = CATransform3DRotate(transform, M_PI / 8, 0, 1.0 / 2, 0);
+    transform = CATransform3DScale(transform, 0.8, 0.8, 1);
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
+    animation.toValue= [NSValue valueWithCATransform3D:transform];
+    animation.duration= 1;
+    animation.autoreverses= NO;
+    animation.fillMode = @"forwards";
+    animation.removedOnCompletion = NO;
+    return animation;
 }
 
 - (void)didReceiveMemoryWarning {
